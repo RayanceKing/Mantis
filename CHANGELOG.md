@@ -2,6 +2,21 @@
 
 -----
 
+### [2.31.2](https://www.github.com/guoyingtao/Mantis/compare/v2.31.1...v2.31.2) (2026-05-31)
+
+
+### Bug Fixes
+
+* avoid contentOffset snap on first skew frame after rotation/resize ([#519](https://www.github.com/guoyingtao/Mantis/issues/519)) ([ced9c75](https://www.github.com/guoyingtao/Mantis/commit/ced9c75e09a27b390e52364a9396e1adac1209de))
+
+### [2.31.1](https://www.github.com/guoyingtao/Mantis/compare/v2.31.0...v2.31.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* guard against NaN/Infinite values to prevent crashes during crop and rotation ([#518](https://www.github.com/guoyingtao/Mantis/issues/518)) ([294e44b](https://www.github.com/guoyingtao/Mantis/commit/294e44b5fb3095f0b0aa00ef5525541c9cbf1835))
+* wrap iOS 26 Liquid Glass API usage with #if compiler(>=6.2) for Xcode 16 compatibility ([#513](https://www.github.com/guoyingtao/Mantis/issues/513)) ([662383e](https://www.github.com/guoyingtao/Mantis/commit/662383e04f051eca0f1d7f1c52cd31a29397c582))
+
 ## [2.31.0](https://www.github.com/guoyingtao/Mantis/compare/v2.30.0...v2.31.0) (2026-03-02)
 
 
