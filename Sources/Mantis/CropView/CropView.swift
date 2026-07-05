@@ -318,12 +318,7 @@ final class CropView: UIView {
     
     func updateCropBoxFrame(withTouchPoint touchPoint: CGPoint) {
         let imageContainerRect = imageContainer.convert(imageContainer.bounds, to: self)
-        let imageFrame = CGRect(x: cropWorkbenchView.frame.origin.x - cropWorkbenchView.contentOffset.x,
-                                y: cropWorkbenchView.frame.origin.y - cropWorkbenchView.contentOffset.y,
-                                width: imageContainerRect.size.width,
-                                height: imageContainerRect.size.height)
-        
-        let touchPoint = confineTouchPoint(touchPoint, in: imageFrame)
+        let touchPoint = confineTouchPoint(touchPoint, in: imageContainerRect)
         let contentBounds = getContentBounds()
         let cropViewMinimumBoxSize = cropViewConfig.minimumCropBoxSize
         let newCropBoxFrame = viewModel.getNewCropBoxFrame(withTouchPoint: touchPoint,
@@ -627,7 +622,13 @@ extension CropView: CropViewProtocol {
     
     func crop(_ image: UIImage) -> CropOutput {
         let cropInfo = getCropInfo()
-        let cropOutput = (image.crop(by: cropInfo), makeTransformation(), cropInfo)
+        let croppedImage: UIImage?
+        if image.exceedsPixelCount(cropViewConfig.maxImagePixelCount) {
+            croppedImage = image.cropWithCIImage(by: cropInfo)
+        } else {
+            croppedImage = image.crop(by: cropInfo)
+        }
+        let cropOutput = (croppedImage, makeTransformation(), cropInfo)
         return addImageMask(to: cropOutput)
     }
     
@@ -644,7 +645,8 @@ extension CropView: CropViewProtocol {
     
     func update(_ image: UIImage) {
         self.image = image
-        imageContainer.update(image)
+        let displayImage = image.downsampledIfNeeded(maxPixelCount: cropViewConfig.maxImagePixelCount)
+        imageContainer.update(displayImage)
     }
 }
 
