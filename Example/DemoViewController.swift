@@ -9,6 +9,7 @@
 import UIKit
 import Mantis
 
+// swiftlint:disable type_body_length
 class DemoViewController: UIViewController {
     private let maxImagePixelCount = 4096 * 4096
     private var useLargeImage = false
@@ -509,11 +510,15 @@ extension DemoViewController: CropViewControllerDelegate {
     }
 }
 
+// swiftlint:enable type_body_length
+
 // MARK: - ImagePickerDelegate
 extension DemoViewController: ImagePickerDelegate {
     func didSelect(image: UIImage?) {
         guard let image = image else { return }
         self.image = image
+        // A transformation is only valid for the image it was created from.
+        transformation = nil
         croppedImageView.image = cachedDisplayImage
     }
 }

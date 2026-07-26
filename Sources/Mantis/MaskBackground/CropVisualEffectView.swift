@@ -27,6 +27,28 @@ final class CropMaskVisualEffectView: UIVisualEffectView, CropMaskProtocol {
         self.effectType = effectType
         self.translucencyEffect = translucencyEffect
         self.backgroundColor = backgroundColor
+        // iOS 17+ uses the modern trait-change registration; earlier versions
+        // (the library supports iOS 15) fall back to `traitCollectionDidChange`.
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges(UITraitCollection.systemTraitsAffectingColorAppearance) { (self: Self, previous: UITraitCollection) in
+                if case .blurSystem = self.effectType,
+                   self.traitCollection.hasDifferentColorAppearance(comparedTo: previous) {
+                    self.applyBlurSystemEffect()
+                }
+            }
+        }
+    }
+
+    // iOS 16 and earlier: `registerForTraitChanges` is unavailable, so use the
+    // (pre-iOS-17) trait-change hook. On iOS 17+ the registration above handles it.
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard #unavailable(iOS 17.0) else { return }
+        if case .blurSystem = effectType,
+           let previousTraitCollection,
+           traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            applyBlurSystemEffect()
+        }
     }
         
     func setMask(cropRatio: CGFloat) {
@@ -40,30 +62,17 @@ final class CropMaskVisualEffectView: UIVisualEffectView, CropMaskProtocol {
         self.mask = maskView
     }
     
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        
-        if case .blurSystem = effectType {
-            if #available(iOS 13.0, *),
-               traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-                applyBlurSystemEffect()
-            }
-        }
-    }
-    
     private func applyBlurSystemEffect() {
-        if #available(iOS 13.0, *) {
-            let isDark = traitCollection.userInterfaceStyle == .dark
-            if isDark {
-                self.effect = UIBlurEffect(style: .dark)
-                self.backgroundColor = .clear
-            } else {
-                // Blur effects sample underlying content, so they can appear
-                // dark over colorful images. Use a solid light background
-                // instead to guarantee a light appearance in light mode.
-                self.effect = nil
-                self.backgroundColor = UIColor(white: 0.95, alpha: 0.98)
-            }
+        let isDark = traitCollection.userInterfaceStyle == .dark
+        if isDark {
+            self.effect = UIBlurEffect(style: .dark)
+            self.backgroundColor = .clear
+        } else {
+            // Blur effects sample underlying content, so they can appear
+            // dark over colorful images. Use a solid light background
+            // instead to guarantee a light appearance in light mode.
+            self.effect = nil
+            self.backgroundColor = UIColor(white: 0.95, alpha: 0.98)
         }
     }
     

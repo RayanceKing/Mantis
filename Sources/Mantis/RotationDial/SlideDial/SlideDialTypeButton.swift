@@ -42,19 +42,36 @@ final class SlideDialTypeButton: UIView {
         setupLayers()
         setupSubviews()
         updateAppearance()
+        // iOS 17+ uses the modern trait-change registration; earlier versions
+        // (the library supports iOS 15) fall back to `traitCollectionDidChange`.
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges(UITraitCollection.systemTraitsAffectingColorAppearance) { (self: Self, previous: UITraitCollection) in
+                if self.traitCollection.hasDifferentColorAppearance(comparedTo: previous) {
+                    self.applyColorsForCurrentTraitCollection()
+                }
+            }
+        }
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
+    // iOS 16 and earlier: `registerForTraitChanges` is unavailable, so use the
+    // (pre-iOS-17) trait-change hook. On iOS 17+ the registration above handles it.
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        if #available(iOS 13.0, *),
+        guard #unavailable(iOS 17.0) else { return }
+        if let previousTraitCollection,
            traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            ringLayer.fillColor = config.buttonFillColor.cgColor
-            updateAppearance()
+            applyColorsForCurrentTraitCollection()
         }
+    }
+
+    /// Reapplies colors on a light/dark appearance change.
+    private func applyColorsForCurrentTraitCollection() {
+        ringLayer.fillColor = config.buttonFillColor.cgColor
+        updateAppearance()
     }
     
     override func layoutSubviews() {
